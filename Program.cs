@@ -35,8 +35,8 @@ namespace TentaClient
 			{
 				Console.WriteLine("[a] Input a to create a first user");
 				Console.WriteLine("[b] Input b to run everything as the first user(He is admin). This will also create the rest of the users");
-				Console.WriteLine("[c] Input c to run everything as VD(will require additional input)");
-				Console.WriteLine("[d] Input d to run everything as CountryManager(will require additional input)");
+				Console.WriteLine("[c] Input c to run everything as VD");
+				Console.WriteLine("[d] Input d to run everything as CountryManager");
 				Console.WriteLine("[e] Input e to run everything as Employee");
 				Console.WriteLine("[x] Input x to exit the program");
 				string menuChoice = Console.ReadLine();
@@ -57,31 +57,39 @@ namespace TentaClient
 							await PostCM(authResult.JwtToken);
 							await PostVD(authResult.JwtToken);
 							await PostUser("SecondUserIsEmployeeOnly1991", 2, "SecondUserIsEmployeeOnly1991@hotmail.com", "!Hejalla1234");
+							await PostUser("UserToDelete", 3, "UserToDelete@hotmail.com", "!Hejalla1234");
+							await PostUser("UserToDeleteAsOther", 6, "UserToDeleteAsOther@hotmail.com", "!Hejalla1234");
 							Console.WriteLine("All users created! ");
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							Console.WriteLine("Running GET ALL ORDERS (Should return everything) ");
-							Thread.Sleep(2000);
-							var getAllOrderList = await GetAllorders(authResult.JwtToken);
+							Thread.Sleep(4000);
+							var getAllOrderList = await GetAllOrders(authResult.JwtToken);
 							foreach (var order in getAllOrderList)
 							{
 								Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
 							}
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							Console.WriteLine("Running GET MY ORDERS on employeeID 7 (Should return everything from employeeID 7)");
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							var getMyOrderList = await GetMyOrders(authResult.JwtToken, 7);
 							foreach (var order in getMyOrderList)
 							{
 								Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
 							}
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							Console.WriteLine("Running GET COUNTRY ORDERS (Should return everything from country FRANCE)");
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							var getCountryOrderLIst = await GetCountryOrders(authResult.JwtToken, "FRANCE");
 							foreach (var order in getCountryOrderLIst)
 							{
 								Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
 							}
+							Thread.Sleep(4000);							
+							Console.WriteLine("Trying to delete 'UserToDelete' account as Admin (Will return OK)");
+							Thread.Sleep(4000);
+							var deleteUserAsEmployeeResponse = await DeleteUser(authResult.JwtToken, "UserToDelete");
+							Console.WriteLine(deleteUserAsEmployeeResponse);
+
 
 							break;
 						}
@@ -92,30 +100,35 @@ namespace TentaClient
 							var userAuthentication = new AuthenticateLogin { UserName = userName, Password = password };
 							var authResult = await AuthUser(userAuthentication);
 							
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							Console.WriteLine("Running GET ALL ORDERS as VD (Should return everything) ");
-							Thread.Sleep(2000);
-							var getAllOrderList = await GetAllorders(authResult.JwtToken);
+							Thread.Sleep(4000);
+							var getAllOrderList = await GetAllOrders(authResult.JwtToken);
 							foreach (var order in getAllOrderList)
 							{
 								Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
 							}
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							Console.WriteLine("Running GET MY ORDERS as VD on employeeID 6 (Should return everything from employeeID 6)");
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							var getMyOrderList = await GetMyOrders(authResult.JwtToken, 6);
 							foreach (var order in getMyOrderList)
 							{
 								Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
 							}
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							Console.WriteLine("Running GET COUNTRY ORDERS (Should return everything from country GERMANY)");
-							Thread.Sleep(2000);
+							Thread.Sleep(4000);
 							var getCountryOrderLIst = await GetCountryOrders(authResult.JwtToken, "GERMANY");
 							foreach (var order in getCountryOrderLIst)
 							{
 								Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
 							}
+							Thread.Sleep(4000);
+							Console.WriteLine("Trying to delete 'UserToDeleteAsOther' account as VD (Should not be able to so will return forbidden)");
+							Thread.Sleep(4000);
+							var deleteUserAsEmployeeResponse = await DeleteUser(authResult.JwtToken, "UserToDeleteAsOther");
+							Console.WriteLine(deleteUserAsEmployeeResponse);
 							break;
 						}
 					case ("d"):
@@ -127,7 +140,7 @@ namespace TentaClient
 							
 							Console.WriteLine("Running GET ALL ORDERS as Country Manager (Should return everything where shipcountry = employee.country) ");
 							Thread.Sleep(4000);
-							var getAllOrderList = await GetAllorders(authResult.JwtToken);
+							var getAllOrderList = await GetAllOrders(authResult.JwtToken);
 							foreach (var order in getAllOrderList)
 							{
 								Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
@@ -147,8 +160,13 @@ namespace TentaClient
 							foreach (var order in getCountryOrderLIst)
 							{
 								Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
-							}							
-							
+							}
+							Thread.Sleep(4000);
+							Console.WriteLine("Trying to delete 'UserToDeleteAsOther' account as CM (Should not be able to so will return forbidden)");
+							Thread.Sleep(4000);
+							var deleteUserAsEmployeeResponse = await DeleteUser(authResult.JwtToken, "UserToDeleteAsOther");
+							Console.WriteLine(deleteUserAsEmployeeResponse);
+
 							break;
 						}
 					case ("e"):
@@ -158,44 +176,64 @@ namespace TentaClient
 							var userAuthentication = new AuthenticateLogin { UserName = userName, Password = password };
 							var authResult = await AuthUser(userAuthentication);
 
-							Console.WriteLine("Running GET ALL ORDERS as Employee (List should return null so will be unauthorized) ");
+							Console.WriteLine("Running GET ALL ORDERS as Employee (Should not be able to so will return forbidden) ");
 							Thread.Sleep(4000);
-							var getAllOrderList = await GetAllorders(authResult.JwtToken);
-							if (getAllOrderList == null)
+							try
 							{
-								Console.WriteLine("Orderlist was empty, you don't have authorization to use this method");
-							}
-							else
-							{
-								foreach (var order in getAllOrderList)
+								var getAllOrderList = await GetAllOrders(authResult.JwtToken);
+								if (getAllOrderList != null)
 								{
-									Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
-								}
-							}							
-							Thread.Sleep(4000);
-							Console.WriteLine("Running GET MY ORDERS as Employee(Will return the orders on the logged in user)");
-							Thread.Sleep(4000);
-							var getMyOrderList = await GetMyOrders(authResult.JwtToken);
-							foreach (var order in getMyOrderList)
-							{
-								Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
-							}
-							Thread.Sleep(4000);
-							Console.WriteLine("Running GET COUNTRY ORDERS as Employee(List should return null so will be unauthorized)");
-							Thread.Sleep(4000);
-							var GetCountryOrderList = await GetCountryOrders(authResult.JwtToken);
-							if (GetCountryOrderList == null)
-							{
-								Console.WriteLine("\nOrderlist was empty, you don't have authorization to use this method.");
-							}
-							else
-							{
-								foreach (var order in GetCountryOrderList)
-								{
-									Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
+									foreach (var order in getAllOrderList)
+									{
+										Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
+									}
 								}
 							}
-							
+							catch (Exception ex)
+							{
+								Console.WriteLine(ex.Message);								
+							}															
+							Thread.Sleep(4000);
+							Console.WriteLine("Running GET MY ORDERS as Employee(Should return orders from employee)");
+							Thread.Sleep(4000);
+							try
+							{
+								var getAllOrderList = await GetMyOrders(authResult.JwtToken);
+								if (getAllOrderList != null)
+								{
+									foreach (var order in getAllOrderList)
+									{
+										Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
+									}
+								}
+							}
+							catch (Exception ex)
+							{
+								Console.WriteLine(ex.Message);
+							}
+							Thread.Sleep(4000);
+							Console.WriteLine("Running GET COUNTRY ORDERS as Employee(Should not be able to so will return forbidden)");
+							Thread.Sleep(4000);
+							try
+							{
+								var getAllOrderList = await GetCountryOrders(authResult.JwtToken);
+								if (getAllOrderList != null)
+								{
+									foreach (var order in getAllOrderList)
+									{
+										Console.WriteLine(order.CustomerId + " " + order.EmployeeId + " " + order.ShipCountry);
+									}
+								}
+							}
+							catch (Exception ex)
+							{
+								Console.WriteLine(ex.Message);
+							}
+							Thread.Sleep(4000); 
+							Console.WriteLine("Trying to delete first account with Employee (Should not be able to so will return forbidden)");
+							Thread.Sleep(4000);
+							var deleteUserAsEmployeeResponse = await DeleteUser(authResult.JwtToken, "FirstUserIsAdmin1991");
+							Console.WriteLine(deleteUserAsEmployeeResponse);
 							break;
 						}
 					case ("x"):
@@ -205,9 +243,8 @@ namespace TentaClient
 							break;
 						}
 				}
-			}
-			
-			Console.ReadKey();
+			}			
+		
 		}
 
 		#region CreatingUsers
@@ -345,6 +382,10 @@ namespace TentaClient
 			using var client = new HttpClient();
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 			var response = await client.GetAsync(urlHttps + endpoint);
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				throw new Exception(response.StatusCode.ToString() + response.Content.ReadAsStringAsync().Result);
+			}
 			var result = response.Content.ReadAsStringAsync().Result;
 			var desResult = JsonConvert.DeserializeObject<IEnumerable<AccountResponse>>(result);
 			return desResult;
@@ -367,6 +408,10 @@ namespace TentaClient
 			using var client = new HttpClient();
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 			var response = await client.DeleteAsync(uri);
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				return response.StatusCode.ToString() + response.Content.ReadAsStringAsync().Result;
+			}
 			return response.StatusCode.ToString();
 		}
 		public static async Task<string> UpdateUser(string token, UpdateRequest user)
@@ -393,7 +438,7 @@ namespace TentaClient
 		#endregion
 
 		#region CRUD Orders
-		public static async Task<IEnumerable<OrderResponse>> GetAllorders(string token)
+		public static async Task<IEnumerable<OrderResponse>> GetAllOrders(string token)
 		{
 			if (!TokenValidation(token))
 			{
@@ -404,7 +449,10 @@ namespace TentaClient
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 			
 			var response = await client.GetAsync(urlHttps + endpoint);
-
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				throw new Exception(response.StatusCode.ToString() + response.Content.ReadAsStringAsync().Result);
+			}
 			var result = response.Content.ReadAsStringAsync().Result;
 			var desResult = JsonConvert.DeserializeObject<IEnumerable<OrderResponse>>(result);
 			return desResult;
@@ -426,7 +474,10 @@ namespace TentaClient
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);			
 						
 			var response = await client.GetAsync(uri);
-
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				throw new Exception(response.StatusCode.ToString() + response.Content.ReadAsStringAsync().Result);
+			}
 			var result = response.Content.ReadAsStringAsync().Result;
 			var desResult = JsonConvert.DeserializeObject<IEnumerable<OrderResponse>>(result);
 			return desResult;
@@ -448,7 +499,10 @@ namespace TentaClient
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);			
 		
 			var response = await client.GetAsync(uri);
-
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				throw new Exception(response.StatusCode.ToString() + response.Content.ReadAsStringAsync().Result);
+			}
 			var result = response.Content.ReadAsStringAsync().Result;
 			var desResult = JsonConvert.DeserializeObject<IEnumerable<OrderResponse>>(result);
 			return desResult;			
